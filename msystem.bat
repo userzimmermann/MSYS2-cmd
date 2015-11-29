@@ -41,12 +41,12 @@ if "%~1" == "/?" (
     echo Future versions of MSYSTEM will try to automatically avoid conflicts
     echo with certain other environment types.
     echo.
-    echo Call MSYSTEM /I with any of the following specifiers
-    echo to install MSYS2 features into certain shell extension frameworks.
+    echo Call MSYSTEM /X with any of the following specifiers
+    echo to install MSYS2 features into other CMD shell extensions.
     echo.
     echo Install CLINK auto-completion for MSYSTEM and PACMAN with:
     echo.
-    echo     MSYSTEM /I CLINK [clink settings directory]
+    echo     MSYSTEM /X CLINK [clink settings directory]
     echo.
     echo If no CLINK settings directory is given,
     echo MSYSTEM will try to automatically find it.
@@ -69,8 +69,8 @@ if "%~1" == "" (
 REM --------------------------------------------------------------------------
 REM Handle install flag
 
-if /i "%~1" == "/I" (
-    REM install MSYS2 features into CMD shell extension frameworks
+if /i "%~1" == "/X" (
+    REM install MSYS2 features into other CMD shell extensions
     goto install
 )
 
@@ -213,7 +213,7 @@ exit /b 0
 
 
 REM ==========================================================================
-REM Install MSYS2 features into CMD shell extension frameworks
+REM Install MSYS2 features into other CMD shell extensions
 :install
 
 if "%2" == "" (

@@ -71,6 +71,7 @@ REM Handle install flag
 
 if /i "%~1" == "/X" (
     REM install MSYS2 features into other CMD shell extensions
+    shift /1
     goto install
 )
 
@@ -85,7 +86,21 @@ REM Handle environment deactivation flag
 
 if /i "%~1" == "/D" (
     set MSYS2_SYSTEM=
-    goto deactivate
+    goto :deactivate
+)
+
+REM --------------------------------------------------------------------------
+REM Handle activation flags in a loop
+
+REM default options
+set MSYS=false
+
+:parseFlags
+
+if /i "%~1" == "/S" (
+    set MSYS=true
+    shift /1
+    goto :parseFlags
 )
 
 REM --------------------------------------------------------------------------
@@ -93,9 +108,11 @@ REM Check for valid MSYS2 environment name and set %MSYS2_SYSTEM% accordingly
 
 for %%M in (MSYS MINGW32 MINGW64) do if /i "%~1" == "%%M" (
     set MSYS2_SYSTEM=%%M
-    goto prepare
+    shift /1
+    goto :prepare
 )
-echo Invalid argument '%~1'. Call MSYSTEM /? for help.
+echo Invalid argument '%~1'.
+echo Call MSYSTEM /? for help.
 exit /b 1
 
 REM --------------------------------------------------------------------------
@@ -162,7 +179,9 @@ REM (use temporary %_cleanPrompt% to avoid too many %PROMPT% changes,
 REM  which can result in strange shell behavior)
 set "_cleanPrompt=%PROMPT:$LMSYS$G$S=%"
 set "_cleanPrompt=%_cleanPrompt:$LMINGW32$G$S=%"
+set "_cleanPrompt=%_cleanPrompt:$LMINGW32|MSYS$G$S=%"
 set "_cleanPrompt=%_cleanPrompt:$LMINGW64$G$S=%"
+set "_cleanPrompt=%_cleanPrompt:$LMINGW64|MSYS$G$S=%"
 
 REM check if only deactivation requested (via MSYSTEM /D)
 if "%MSYS2_SYSTEM%" == "" (
@@ -183,10 +202,24 @@ set "MSYS2_PATH=%MSYS2_ROOT%\usr\local\bin;%MSYS2_ROOT%\usr\bin;%MSYS2_ROOT%\bin
 set "MSYS2_MINGW32_PATH=%MSYS2_ROOT%\mingw32\bin"
 set "MSYS2_MINGW64_PATH=%MSYS2_ROOT%\mingw64\bin"
 
+REM the <tag> to be prepended to prompt
+set "promptTag=%MSYS2_SYSTEM%"
+
 REM prepend MSYS2 bin paths and/or MINGW32/64 bin paths to %PATH%
+:setPath
+
 if "%MSYS2_SYSTEM%" == "MSYS" (
     REM also prepend the extra MSYS tool wrapper scripts path
     set "PATH=%~dp0msys;%MSYS2_PATH%;%PATH%"
+    goto :setPrompt
+)
+
+REM MINGW32/64
+if %MSYS% == true (
+    REM first prepend MSYS bin and extra scripts paths
+    set "PATH=%~dp0msys;%MSYS2_PATH%;%PATH%"
+    REM and add |MSYS to the prompt tag
+    set "promptTag=%promptTag%|MSYS"
 )
 if "%MSYS2_SYSTEM%" == "MINGW32" (
     set "PATH=%MSYS2_MINGW32_PATH%;%PATH%"
@@ -196,19 +229,21 @@ if "%MSYS2_SYSTEM%" == "MINGW64" (
 )
 
 REM prepend the appropriate <MSYS> or <MINGW32/64> tag to prompt
-set "_prompt=$L%MSYS2_SYSTEM%$G$S%_cleanPrompt%"
+:setPrompt
+
+set "_prompt=$L%promptTag%$G$S%_cleanPrompt%"
 
 REM --------------------------------------------------------------------------
 REM Successfully finished MSYS2 environment (de)activation
 :end
 
 REM export new environment variables
-endlocal & set "MSYS2_SYSTEM=%MSYS2_SYSTEM%" ^
-         & set "MSYS2_PATH=%MSYS2_PATH%" ^
-         & set "MSYS2_MINGW32_PATH=%MSYS2_MINGW32_PATH%" ^
-         & set "MSYS2_MINGW64_PATH=%MSYS2_MINGW64_PATH%" ^
-         & set "PATH=%PATH%" ^
-         & set "PROMPT=%_prompt%"
+endlocal && set "MSYS2_SYSTEM=%MSYS2_SYSTEM%" ^
+         && set "MSYS2_PATH=%MSYS2_PATH%" ^
+         && set "MSYS2_MINGW32_PATH=%MSYS2_MINGW32_PATH%" ^
+         && set "MSYS2_MINGW64_PATH=%MSYS2_MINGW64_PATH%" ^
+         && set "PATH=%PATH%" ^
+         && set "PROMPT=%_prompt%"
 exit /b 0
 
 
@@ -216,12 +251,15 @@ REM ==========================================================================
 REM Install MSYS2 features into other CMD shell extensions
 :install
 
-if "%2" == "" (
-    echo Missing specifier. Call MSYSTEM /? for help.
+if "%~1" == "" (
+    echo Missing CMD shell extension specifier.
+    echo Call MSYSTEM /? for help.
     exit /b 1
 )
-if /i "%2" == "clink" goto clink
-
+if /i "%~1" == "clink" (
+   shift /1
+   goto :clink
+)
 
 REM --------------------------------------------------------------------------
 REM Install MSYS2 auto-completion features into CLINK
@@ -229,7 +267,7 @@ REM Install MSYS2 auto-completion features into CLINK
 
 setlocal EnableDelayedExpansion
 
-if "%~3" == "" (
+if "%~1" == "" (
     REM no clink settings dir given ==> try to find
     set "clinkDir=%LOCALAPPDATA%\clink"
     if not exist "!clinkDir!\" (
@@ -238,11 +276,11 @@ if "%~3" == "" (
         exit /b 1
     )
 ) else (
-    if not exist "%~3\" (
+    if not exist "%~1\" (
         echo '%~3' does not exist or is not a directory.
         exit /b 1
     )
-    set "clinkDir=%~3"
+    set "clinkDir=%~1"
 )
 
 set nl=^

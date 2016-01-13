@@ -72,9 +72,13 @@ REM Handle install flag
 if /i "%~1" == "/X" (
     REM install MSYS2 features into other CMD shell extensions
     shift /1
-    goto install
+    goto :install
 )
-
+if /i "%~1" == "/I" (
+    echo The /I flag is deprecated. Please use MSYSTEM /X in the future.
+    shift /1
+    goto :install
+)
 
 REM ==========================================================================
 REM Environment management

@@ -23,9 +23,9 @@ if "%~1" == "/?" (
 
 set MSYSTEM=MINGW32
 if "%~1" == "" (
-    start bash.exe --login -c 'cd "%cd%"; bash'
+    start bash.exe --login -c 'cd "%cd%" ^&^& bash'
 ) else (
-    bash.exe --login -c 'cd "%cd%"; bash %*'
+    bash.exe --login -c 'cd "%cd%" ^&^& bash %*'
 )
 
 endlocal

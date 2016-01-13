@@ -226,10 +226,12 @@ if %MSYS% == true (
     set "promptTag=%promptTag%|MSYS"
 )
 if "%MSYS2_SYSTEM%" == "MINGW32" (
-    set "PATH=%MSYS2_MINGW32_PATH%;%PATH%"
+    REM prepend MINGW32 bin and extra scripts paths
+    set "PATH=%~dp0mingw32;%MSYS2_MINGW32_PATH%;%PATH%"
 )
 if "%MSYS2_SYSTEM%" == "MINGW64" (
-    set "PATH=%MSYS2_MINGW64_PATH%;%PATH%"
+    REM prepend MINGW64 bin and extra scripts paths
+    set "PATH=%~dp0mingw64;%MSYS2_MINGW64_PATH%;%PATH%"
 )
 
 REM prepend the appropriate <MSYS> or <MINGW32/64> tag to prompt

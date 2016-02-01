@@ -20,6 +20,22 @@ if "%~1" == "/?" (
     echo Call BASH -i to run an interactive bash.exe in current shell window.
     exit /b 0
 )
+endlocal
+
+setlocal EnableExtensions EnableDelayedExpansion || exit /b
+
+if not "%MSYS2_MINGW32_PATH%" == "" (
+    call set "PATH=%%PATH:%MSYS2_MINGW32_PATH%;=%%"
+)
+if not "%MSYS2_MINGW64_PATH%" == "" (
+    call set "PATH=%%PATH:%MSYS2_MINGW64_PATH%;=%%"
+)
+REM and also remove any extra MSYS/MINGW tool wrapper scripts paths
+for %%R in ("%~dp0..") do (
+    call set "PATH=!!PATH:%%~fR\msys;=!!"
+    call set "PATH=!!PATH:%%~fR\mingw32;=!!"
+    call set "PATH=!!PATH:%%~fR\mingw64;=!!"
+)
 
 set MSYSTEM=MSYS
 if "%~1" == "" (
@@ -27,5 +43,4 @@ if "%~1" == "" (
 ) else (
     bash.exe --login -c 'cd "%cd%" ^&^& bash %*'
 )
-
 endlocal

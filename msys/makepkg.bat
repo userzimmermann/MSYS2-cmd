@@ -18,6 +18,6 @@ if "%~1" == "/?" (
     exit /b 0
 )
 
-%~dp0bash.bat -c "makepkg %*"
+"%~dp0bash.bat" -c "makepkg %*"
 
 endlocal

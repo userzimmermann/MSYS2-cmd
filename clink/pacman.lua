@@ -1,6 +1,6 @@
 -- CMD shell integration for MSYS2
 --
--- Copyright (C) 2015 Stefan Zimmermann <zimmermann.code@gmail.com>
+-- Copyright (C) 2015-2016 Stefan Zimmermann <zimmermann.code@gmail.com>
 --
 -- Licensed under the Apache License, Version 2.0
 
